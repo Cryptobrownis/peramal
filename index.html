@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ramalan Dewa lewat garis wajah 📸🔮</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Poppins:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0d0b1e;
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+      padding: 20px;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      padding: 30px 20px;
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+      position: relative;
+    }
+
+    h1 {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.85rem;
+      color: #00ffcc;
+      margin-bottom: 20px;
+      line-height: 1.6;
+      text-shadow: 2px 2px #ff2a5f;
+    }
+
+    /* SISTEM HALAMAN */
+    .page {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      animation: fadeIn 0.4s ease-in-out forwards;
+    }
+
+    .page.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* HALAMAN 1: INPUT FOTO */
+    .upload-box {
+      border: 2px dashed #00ffcc;
+      border-radius: 12px;
+      padding: 25px 15px;
+      width: 100%;
+      margin-bottom: 20px;
+      background: rgba(0, 255, 204, 0.05);
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .upload-box:hover {
+      background: rgba(0, 255, 204, 0.15);
+      border-color: #ff2a5f;
+    }
+
+    input[type="file"] { display: none; }
+
+    .preview-box {
+      width: 100%;
+      max-height: 250px;
+      border-radius: 10px;
+      object-fit: contain;
+      margin-bottom: 15px;
+      display: none;
+      border: 2px solid #00ffcc;
+    }
+
+    /* HALAMAN 2: CANVAS ANIMASI FOTO ASLI */
+    .canvas-wrapper {
+      background: #000;
+      border: 3px solid #00ffcc;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 15px;
+      max-width: 100%;
+      box-shadow: 0 0 20px rgba(0, 255, 204, 0.3);
+    }
+
+    canvas {
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+
+    .status-text {
+      font-size: 0.85rem;
+      color: #ffd670;
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
+
+    /* KARTU RAMALAN GOMBAL */
+    .ramalan-card {
+      background: rgba(255, 42, 95, 0.15);
+      border: 2px dashed #ff2a5f;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 20px;
+      width: 100%;
+      display: none;
+      animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .ramalan-title {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.65rem;
+      color: #00ffcc;
+      margin-bottom: 8px;
+    }
+
+    .ramalan-text {
+      font-size: 0.88rem;
+      color: #fff;
+      font-style: italic;
+      line-height: 1.5;
+    }
+
+    /* TOMBOL UTAMA */
+    .btn {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.7rem;
+      padding: 14px 24px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      background: #ff2a5f;
+      color: white;
+      box-shadow: 0 4px 0 #990026;
+      transition: 0.1s;
+      width: 100%;
+    }
+
+    .btn:active {
+      transform: translateY(4px);
+      box-shadow: 0 0 0 #990026;
+    }
+
+    .btn:disabled {
+      background: #333;
+      box-shadow: none;
+      cursor: not-allowed;
+      color: #666;
+    }
+
+    .btn-secondary {
+      background: #00ffcc;
+      color: #0d0b1e;
+      box-shadow: 0 4px 0 #00997a;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- ================= HALAMAN 1: MENU INPUT ================= -->
+    <div id="page1" class="page active">
+      <h1>INPUT FOTO LU KIDSS 📸</h1>
+
+      <div class="upload-box" onclick="document.getElementById('photoInput').click()">
+        <p id="uploadLabel">📁 Klik dimari kocakk</p>
+        <input type="file" id="photoInput" accept="image/*">
+      </div>
+
+      <img id="previewImg" class="preview-box" alt="Preview Foto">
+
+      <button id="processBtn" class="btn" disabled>LANJUT PROSES ➔</button>
+    </div>
+
+    <!-- ================= HALAMAN 2: ANIMASI PROSES & RAMALAN ================= -->
+    <div id="page2" class="page">
+      <h1>RAMALAN ASLI GUNUNG KAWI</h1>
+
+      <div class="canvas-wrapper">
+        <canvas id="animCanvas"></canvas>
+      </div>
+
+      <div id="statusText" class="status-text">Mempertajam piksel foto...</div>
+
+      <!-- TEMPAT RAMALAN GOMBAL TAMPIL -->
+      <div id="ramalanCard" class="ramalan-card">
+        <div class="ramalan-title">🔮 hasil peramal 🔮</div>
+        <div id="ramalanText" class="ramalan-text">...</div>
+      </div>
+
+      <button id="replayBtn" class="btn btn-secondary" onclick="startPhotoAnimation()">Putar Ulang kalo ragu 🔄</button>
+      <button class="btn" onclick="goToPage(1)">Upload Foto yg laen 📁</button>
+    </div>
+
+  </div>
+
+  <script>
+    const photoInput = document.getElementById('photoInput');
+    const uploadLabel = document.getElementById('uploadLabel');
+    const previewImg = document.getElementById('previewImg');
+    const processBtn = document.getElementById('processBtn');
+    
+    const canvas = document.getElementById('animCanvas');
+    const ctx = canvas.getContext('2d');
+    const statusText = document.getElementById('statusText');
+    const ramalanCard = document.getElementById('ramalanCard');
+    const ramalanText = document.getElementById('ramalanText');
+    const replayBtn = document.getElementById('replayBtn');
+
+    let loadedImage = null;
+    let animationFrameId = null;
+
+    // DAFTAR RAMALAN GOMBAL LUCU
+    const ramalanList = [
+      "Makin jernih fotonya, makin kelihatan kalau kamu tuh alesan aku senyam senyum sendiri. 😜",
+      "Piksel boleh dari buram ke jernih, tapi rasa sukaku ga pernah burem. eaaaaaakkk~ 💘",
+      "Hasil analisis AI: Foto ini mengandung kadar kemanisan 100% yang berisiko menyebabkan serangan rindu mendadak! 🍩",
+      "Ramalan hari ini: Foto kamu terlalu berbahaya kalau dilihat sendirian, butuh pendamping hidup! ⚠️😍",
+      "Masa depan fotomu sudah jernih, sekarang tinggal masa depan kita berdua yang perlu kita pertegas. 🔮✨",
+      "Katanya foto ini butuh waktu buat jernih, persis kayak hatiku yang butuh waktu buat berhenti mikirin kamu. 💊💖",
+      "Kamera sebagus apapun gak akan bisa menangkap betapa indahnya senyumanmu secara nyata. ⭐😊",
+      "Peringatan!!! foto ini menyebabkan kangen, senyam senyum sendiri, dan bikin kangen. 💓",
+      "Gak peduli mau piksel buram atau HD jernih, monyed pun sujud liatnya. 🙈❤️",
+      "Pikselnya sudah smooth , tinggal perhalus jalan ke pelaminan aja. 🌸"
+    ];
+
+    // 1. Input Foto
+    photoInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      uploadLabel.innerText = `📄 File: ${file.name}`;
+      
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        loadedImage = new Image();
+        loadedImage.onload = function() {
+          previewImg.src = event.target.result;
+          previewImg.style.display = 'block';
+          processBtn.disabled = false;
+        };
+        loadedImage.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // 2. Klik Tombol Lanjut
+    processBtn.addEventListener('click', function() {
+      goToPage(2);
+      startPhotoAnimation();
+    });
+
+    function goToPage(pageNum) {
+      document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+      document.getElementById(`page${pageNum}`).classList.add('active');
+
+      if (pageNum === 1 && animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    }
+
+    // 3. ANIMASI PROSES: PIXEL SANGAT BURAM -> FOTO ASLI JERNIH (LAMBAT)
+    function startPhotoAnimation() {
+      if (!loadedImage) return;
+
+      // Tentukan dimensi canvas berdasar rasio foto asli
+      const maxW = 450;
+      let scale = 1;
+      if (loadedImage.width > maxW) scale = maxW / loadedImage.width;
+
+      const w = Math.floor(loadedImage.width * scale);
+      const h = Math.floor(loadedImage.height * scale);
+
+      canvas.width = w;
+      canvas.height = h;
+
+      const tempCanvas = document.createElement('canvas');
+      const tempCtx = tempCanvas.getContext('2d');
+
+      // Mulai dari piksel sangat kasar/rendah (1.5% dari ukuran asli)
+      let currentScale = 0.015; 
+      const targetScale = 1.0; 
+
+      // KECEPATAN ANIMASI (0.0010 = Lambat & Sangat Mulus, memakan waktu ~12-15 detik)
+      const speed = 0.0010; 
+
+      replayBtn.disabled = true;
+      ramalanCard.style.display = 'none'; // Sembunyikan ramalan saat animasi berjalan
+
+      function renderFrame() {
+        if (currentScale < targetScale) {
+          currentScale += speed;
+          if (currentScale > targetScale) currentScale = targetScale;
+
+          // Hitung ukuran piksel render sementara
+          const sw = Math.max(1, Math.floor(w * currentScale));
+          const sh = Math.max(1, Math.floor(h * currentScale));
+
+          tempCanvas.width = sw;
+          tempCanvas.height = sh;
+
+          // Gambar foto asli ke bentuk piksel mini
+          tempCtx.drawImage(loadedImage, 0, 0, sw, sh);
+
+          // Matikan smoothing di awal agar piksel kotak-kotak terlihat jelas, 
+          // lalu aktifkan saat mendekati jernih (>80%)
+          const isSmoothing = currentScale > 0.80;
+          ctx.imageSmoothingEnabled = isSmoothing;
+          ctx.mozImageSmoothingEnabled = isSmoothing;
+          ctx.webkitImageSmoothingEnabled = isSmoothing;
+
+          ctx.clearRect(0, 0, w, h);
+          ctx.drawImage(tempCanvas, 0, 0, sw, sh, 0, 0, w, h);
+
+          const percent = Math.floor((currentScale / targetScale) * 100);
+          statusText.innerText = `⏳ Menjernihkan Foto & Membaca Ramalan: ${percent}%...`;
+
+          animationFrameId = requestAnimationFrame(renderFrame);
+        } else {
+          // Hasil Akhir: Foto Asli Jernih (HD) Sempurna
+          ctx.imageSmoothingEnabled = true;
+          ctx.drawImage(loadedImage, 0, 0, w, h);
+          statusText.innerText = "✨ Foto Jernih Sempurna & Ramalan Siap!";
+          
+          // Tampilkan Ramalan Gombal Acak
+          showRandomRamalan();
+          replayBtn.disabled = false;
+        }
+      }
+
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      renderFrame();
+    }
+
+    // Fungsi Memilih Ramalan Gombal Acak
+    function showRandomRamalan() {
+      const randomIndex = Math.floor(Math.random() * ramalanList.length);
+      ramalanText.innerText = `"${ramalanList[randomIndex]}"`;
+      ramalanCard.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
